@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/botagar/mapotypefu/compare/v1.0.1...v1.0.2) (2025-06-30)
+
+
+### Bug Fixes
+
+* remove unnessesary workflows ([2c0a10e](https://github.com/botagar/mapotypefu/commit/2c0a10e67c87c226f7c2bafddce1ebd981ee6c06))
+
 ## [1.0.1](https://github.com/botagar/mapotypefu/compare/v1.0.0...v1.0.1) (2025-06-30)
 
 
