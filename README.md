@@ -97,6 +97,31 @@ npm install
 npm run build
 ```
 
+### Releasing a New Version
+
+To release a new version of the library:
+
+1. Update the version in package.json:
+   ```bash
+   npm version patch  # for bug fixes
+   npm version minor  # for new features
+   npm version major  # for breaking changes
+   ```
+
+2. Create a new release on GitHub:
+   - Go to the repository's "Releases" page
+   - Click "Draft a new release"
+   - Choose the tag that was just created
+   - Add release notes
+   - Publish the release
+
+3. The GitHub Actions workflow will automatically:
+   - Run tests and linting
+   - Build the package
+   - Publish to npm
+
+Note: You need to set up an NPM_TOKEN secret in your GitHub repository settings. This token should have publish permissions for your npm account.
+
 ## License
 
 MIT

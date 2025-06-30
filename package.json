@@ -24,8 +24,22 @@
     "iac",
     "cloud"
   ],
-  "author": "",
+  "author": "botagar",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/botagar/mapotypefu.git"
+  },
+  "bugs": {
+    "url": "https://github.com/botagar/mapotypefu/issues"
+  },
+  "homepage": "https://github.com/botagar/mapotypefu#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "devDependencies": {
     "@types/jest": "^29.5.0",
     "@types/node": "^18.15.0",
