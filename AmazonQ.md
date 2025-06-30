@@ -77,6 +77,30 @@ Before submitting any commit to the repository, the following steps must be comp
 
 **Exception**: Commits that contain ONLY documentation changes (README, docs/, comments) may skip these steps.
 
+### Commit Message Convention
+
+This project uses semantic-release for automatic versioning, which relies on conventional commit messages:
+
+- `fix: message` - For bug fixes (creates a PATCH version)
+  - Example: `fix: handle error when OpenTofu is not installed`
+
+- `feat: message` - For new features (creates a MINOR version)
+  - Example: `feat: add support for workspace commands`
+
+- `feat!: message` or `fix!: message` - For breaking changes (creates a MAJOR version)
+  - Example: `feat!: change API for init method`
+
+- Including `BREAKING CHANGE:` in the commit body also triggers a major version
+  - Example: 
+    ```
+    feat: update output parsing
+    
+    BREAKING CHANGE: Output format has changed from string to object
+    ```
+
+- Other prefixes like `docs:`, `chore:`, `style:`, `refactor:`, `perf:`, `test:` are allowed but don't trigger releases
+  - Example: `docs: update API documentation`
+
 ### Pull Request Process
 
 1. Create a feature branch from `main`
