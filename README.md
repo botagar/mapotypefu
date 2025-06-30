@@ -99,26 +99,19 @@ npm run build
 
 ### Releasing a New Version
 
-To release a new version of the library:
+This project uses semantic-release for automatic versioning and publishing. New versions are automatically created based on commit messages:
 
-1. Update the version in package.json:
-   ```bash
-   npm version patch  # for bug fixes
-   npm version minor  # for new features
-   npm version major  # for breaking changes
-   ```
+- `fix: message` - Creates a patch release (e.g., 1.0.0 → 1.0.1)
+- `feat: message` - Creates a minor release (e.g., 1.0.0 → 1.1.0)
+- `feat!: message` or `fix!: message` or including `BREAKING CHANGE:` in the commit body - Creates a major release (e.g., 1.0.0 → 2.0.0)
 
-2. Create a new release on GitHub:
-   - Go to the repository's "Releases" page
-   - Click "Draft a new release"
-   - Choose the tag that was just created
-   - Add release notes
-   - Publish the release
-
-3. The GitHub Actions workflow will automatically:
-   - Run tests and linting
-   - Build the package
-   - Publish to npm
+When commits are pushed to the main branch, the CI workflow will:
+1. Run tests and linting
+2. Build the package
+3. Analyze commit messages
+4. Create a new GitHub release with appropriate version number
+5. Generate release notes
+6. Publish to npm
 
 Note: You need to set up an NPM_TOKEN secret in your GitHub repository settings. This token should have publish permissions for your npm account.
 
