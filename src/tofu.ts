@@ -21,6 +21,10 @@ export interface PlanResult {
   raw: string;
 }
 
+interface TofuError extends Error {
+  all?: string;
+}
+
 /**
  * Main Tofu class for interacting with OpenTofu CLI
  */
@@ -53,8 +57,9 @@ export class Tofu {
     try {
       const { stdout } = await this.runCommand(args);
       return stdout;
-    } catch (error: any) {
-      throw new Error(`Failed to initialize OpenTofu: ${error.message}`);
+    } catch (error: unknown) {
+      const tofuError = error as TofuError;
+      throw new Error(`Failed to initialize OpenTofu: ${tofuError.message}`);
     }
   }
 
@@ -92,8 +97,9 @@ export class Tofu {
         },
         raw: stdout
       };
-    } catch (error: any) {
-      throw new Error(`Failed to generate plan: ${error.message}`);
+    } catch (error: unknown) {
+      const tofuError = error as TofuError;
+      throw new Error(`Failed to generate plan: ${tofuError.message}`);
     }
   }
 
@@ -117,8 +123,9 @@ export class Tofu {
     try {
       const { stdout } = await this.runCommand(args);
       return stdout;
-    } catch (error: any) {
-      throw new Error(`Failed to apply changes: ${error.message}`);
+    } catch (error: unknown) {
+      const tofuError = error as TofuError;
+      throw new Error(`Failed to apply changes: ${tofuError.message}`);
     }
   }
 
@@ -138,15 +145,16 @@ export class Tofu {
     try {
       const { stdout } = await this.runCommand(args);
       return stdout;
-    } catch (error: any) {
-      throw new Error(`Failed to destroy resources: ${error.message}`);
+    } catch (error: unknown) {
+      const tofuError = error as TofuError;
+      throw new Error(`Failed to destroy resources: ${tofuError.message}`);
     }
   }
 
   /**
    * Output the values of root module outputs
    */
-  async output(options?: { name?: string, json?: boolean }): Promise<string | Record<string, any>> {
+  async output(options?: { name?: string, json?: boolean }): Promise<string | Record<string, unknown>> {
     const args = ['output'];
     
     if (options?.name) {
@@ -165,8 +173,9 @@ export class Tofu {
       }
       
       return stdout;
-    } catch (error: any) {
-      throw new Error(`Failed to get outputs: ${error.message}`);
+    } catch (error: unknown) {
+      const tofuError = error as TofuError;
+      throw new Error(`Failed to get outputs: ${tofuError.message}`);
     }
   }
 
@@ -182,10 +191,11 @@ export class Tofu {
         cwd: this.options.workingDirectory,
         all: true
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const tofuError = error as TofuError;
       // Capture and re-throw with stdout/stderr if available
-      if (error.all) {
-        throw new Error(`${error.message}\n${error.all}`);
+      if (tofuError.all) {
+        throw new Error(`${tofuError.message}\n${tofuError.all}`);
       }
       throw error;
     }
