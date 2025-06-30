@@ -13,8 +13,7 @@
     "prepare": "pnpm run build",
     "prepublishOnly": "pnpm test && pnpm run lint",
     "preversion": "pnpm run lint",
-    "version": "pnpm run format && git add -A src",
-    "postversion": "git push && git push --tags"
+    "version": "pnpm run format && git add -A src"
   },
   "keywords": [
     "opentofu",
