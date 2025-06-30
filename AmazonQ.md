@@ -85,6 +85,10 @@ Before submitting any commit to the repository, the following steps must be comp
 4. Ensure CI checks pass
 5. Wait for code review and approval
 
+### Important Note for Amazon Q
+
+Do not commit or push any changes without explicit instruction to do so. Always wait for the user to review changes and specifically request to commit and push.
+
 ## Next Steps
 
 - Implement more OpenTofu commands (workspace, state, etc.)
