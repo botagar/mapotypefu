@@ -1,11 +1,7 @@
-import { Tofu } from '../src/tofu.js';
-
-// Mock execa
-jest.mock('execa', () => ({
-  execa: jest.fn()
-}));
-
+import { Tofu } from '../src/tofu';
 import { execa } from 'execa';
+
+// execa is mocked in jest.setup.cjs
 
 describe('Tofu', () => {
   let tofu: Tofu;
