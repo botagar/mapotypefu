@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/botagar/mapotypefu/compare/v1.0.0...v1.0.1) (2025-06-30)
+
+
+### Bug Fixes
+
+* publish to npm ([33578a5](https://github.com/botagar/mapotypefu/commit/33578a5f0006a9730479e28a5ccd6a7037c03eae))
+
 # 1.0.0 (2025-06-30)
 
 
