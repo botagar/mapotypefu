@@ -54,6 +54,37 @@ mapotypefu/
 
 4. **Testing**: Comprehensive tests using Jest with mocked CLI interactions.
 
+## Contribution Guidelines
+
+### Commit Requirements
+
+Before submitting any commit to the repository, the following steps must be completed:
+
+1. **Run and pass all tests**:
+   ```bash
+   pnpm test
+   ```
+
+2. **Run lint fix**:
+   ```bash
+   pnpm run lint
+   ```
+
+3. **Ensure successful build**:
+   ```bash
+   pnpm run build
+   ```
+
+**Exception**: Commits that contain ONLY documentation changes (README, docs/, comments) may skip these steps.
+
+### Pull Request Process
+
+1. Create a feature branch from `main`
+2. Make your changes following the commit requirements above
+3. Submit a pull request to `main`
+4. Ensure CI checks pass
+5. Wait for code review and approval
+
 ## Next Steps
 
 - Implement more OpenTofu commands (workspace, state, etc.)
