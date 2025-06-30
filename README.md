@@ -84,7 +84,7 @@ Options:
 
 ### Prerequisites
 
-- Node.js (v16+)
+- Node.js (v22+)
 - TypeScript
 - Open Tofu installed locally
 
