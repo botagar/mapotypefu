@@ -1,6 +1,6 @@
 {
   "name": "mapotypefu",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "A TypeScript library wrapper for Open Tofu CLI, providing type-safe infrastructure as code",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

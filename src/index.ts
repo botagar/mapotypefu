@@ -4,9 +4,7 @@
 
 import { Tofu } from './tofu.js';
 
-export {
-  Tofu
-};
+export { Tofu };
 
 // Default export
 export default Tofu;
