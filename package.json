@@ -11,7 +11,6 @@
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
     "prepare": "pnpm run build",
-    "prepublishOnly": "pnpm test && pnpm run lint",
     "preversion": "pnpm run lint",
     "version": "pnpm run format && git add -A src"
   },
@@ -33,9 +32,6 @@
     "url": "https://github.com/botagar/mapotypefu/issues"
   },
   "homepage": "https://github.com/botagar/mapotypefu#readme",
-  "publishConfig": {
-    "access": "public"
-  },
   "engines": {
     "node": ">=22.0.0"
   },
