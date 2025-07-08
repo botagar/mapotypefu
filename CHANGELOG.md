@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/botagar/mapotypefu/compare/v1.0.2...v1.1.0) (2025-07-08)
+
+
+### Features
+
+* include additional files in npm package ([0bc9010](https://github.com/botagar/mapotypefu/commit/0bc9010e92aa78d57076ad86ecb544dc72c5e5a0))
+
 ## [1.0.2](https://github.com/botagar/mapotypefu/compare/v1.0.1...v1.0.2) (2025-06-30)
 
 
