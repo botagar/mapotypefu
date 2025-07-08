@@ -15,8 +15,31 @@ MaPoTypeFu provides a simple, type-safe wrapper around the Open Tofu CLI, allowi
 
 ## Installation
 
+### From GitHub Releases
+
+Since this package is not published to npm, you can install it directly from GitHub:
+
 ```bash
-npm install mapotypefu
+# Using npm
+npm install botagar/mapotypefu#v1.1.0
+
+# Using yarn
+yarn add botagar/mapotypefu#v1.1.0
+
+# Using pnpm
+pnpm add botagar/mapotypefu#v1.1.0
+```
+
+You can replace `v1.1.0` with any specific version tag or branch name. To use the latest version from the main branch:
+
+```bash
+pnpm add botagar/mapotypefu
+```
+
+To use a specific commit:
+
+```bash
+pnpm add botagar/mapotypefu#commit-hash
 ```
 
 ## Usage
@@ -99,7 +122,7 @@ npm run build
 
 ### Releasing a New Version
 
-This project uses semantic-release for automatic versioning and publishing. New versions are automatically created based on commit messages:
+This project uses semantic-release for automatic versioning. New versions are automatically created based on commit messages:
 
 - `fix: message` - Creates a patch release (e.g., 1.0.0 → 1.0.1)
 - `feat: message` - Creates a minor release (e.g., 1.0.0 → 1.1.0)
@@ -111,9 +134,6 @@ When commits are pushed to the main branch, the CI workflow will:
 3. Analyze commit messages
 4. Create a new GitHub release with appropriate version number
 5. Generate release notes
-6. Publish to npm
-
-Note: You need to set up an NPM_TOKEN secret in your GitHub repository settings. This token should have publish permissions for your npm account.
 
 ## License
 
