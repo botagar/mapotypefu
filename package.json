@@ -58,7 +58,11 @@
     "typescript": "^5.0.0"
   },
   "files": [
-    "dist/**/*"
+    "dist/**/*",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "docs/**/*"
   ],
   "dependencies": {
     "execa": "^7.1.1"
