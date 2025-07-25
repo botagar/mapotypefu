@@ -26,13 +26,73 @@ new Tofu(options?: TofuOptions)
 Initialize a OpenTofu working directory.
 
 ```typescript
-async init(options?: { upgrade?: boolean, reconfigure?: boolean }): Promise<string>
+async init(options?: InitOptions): Promise<string>
 ```
+
+#### InitOptions
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| options.upgrade | boolean | false | Whether to upgrade modules and plugins |
-| options.reconfigure | boolean | false | Reconfigure the backend, ignoring any saved configuration |
+| upgrade | boolean | false | Whether to upgrade modules and plugins |
+| reconfigure | boolean | false | Reconfigure the backend, ignoring any saved configuration |
+| backendConfigFiles | string \| string[] | undefined | Backend configuration file(s) |
+| backendConfig | Record<string, string \| number \| boolean> | undefined | Backend configuration key-value pairs (CLI arguments) |
+| backend | boolean | true | Whether to configure the backend |
+| getPlugins | boolean | true | Whether to download plugins |
+| pluginDir | string \| string[] | undefined | Directory(ies) containing plugin binaries |
+| verifyPlugins | boolean | true | Whether to verify plugin signatures |
+
+**Backend Configuration Examples:**
+
+```typescript
+// Using backend configuration files
+await tofu.init({ backendConfigFiles: 'backend.hcl' });
+await tofu.init({ backendConfigFiles: ['backend.hcl', 'secrets.hcl'] });
+
+// Using key-value pairs for backend configuration
+await tofu.init({ 
+  backendConfig: {
+    bucket: 'my-terraform-state',
+    key: 'prod/terraform.tfstate',
+    region: 'us-west-2',
+    encrypt: true
+  }
+});
+
+// Combining backend config files with CLI arguments (CLI takes precedence)
+await tofu.init({ 
+  backendConfigFiles: ['base-config.hcl', 'secrets.hcl'],
+  backendConfig: {
+    bucket: 'override-bucket',  // This will override any bucket setting in files
+    encrypt: true               // This will override any encrypt setting in files
+  }
+});
+
+// Complete example with precedence
+await tofu.init({ 
+  backendConfigFiles: 'backend.hcl',  // Base configuration from file
+  backendConfig: {
+    region: 'us-east-1',              // CLI argument overrides file setting
+    encrypt: true                     // CLI argument overrides file setting
+  }
+});
+
+// Disable backend configuration
+await tofu.init({ backend: false });
+
+// Custom plugin directory
+await tofu.init({ pluginDir: '/custom/plugins' });
+
+// Multiple plugin directories
+await tofu.init({ pluginDir: ['/plugins1', '/plugins2'] });
+```
+
+**Backend Configuration Precedence:**
+
+When both `backendConfigFiles` and `backendConfig` are specified:
+1. Backend config files are processed first (lower precedence)
+2. CLI arguments from `backendConfig` are processed second (higher precedence)
+3. CLI arguments will override any conflicting settings from config files
 
 Returns: A promise that resolves to the output of the init command.
 

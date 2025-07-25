@@ -11,6 +11,17 @@ export interface TofuOptions {
   tofuPath?: string;
 }
 
+export interface InitOptions {
+  upgrade?: boolean;
+  reconfigure?: boolean;
+  backendConfigFiles?: string | string[];
+  backendConfig?: Record<string, string | number | boolean>;
+  backend?: boolean;
+  getPlugins?: boolean;
+  pluginDir?: string | string[];
+  verifyPlugins?: boolean;
+}
+
 export interface PlanResult {
   summary: string;
   changes: {
@@ -43,7 +54,7 @@ export class Tofu {
   /**
    * Initialize a OpenTofu working directory
    */
-  async init(options?: { upgrade?: boolean; reconfigure?: boolean }): Promise<string> {
+  async init(options?: InitOptions): Promise<string> {
     const args = ['init'];
 
     if (options?.upgrade) {
@@ -52,6 +63,36 @@ export class Tofu {
 
     if (options?.reconfigure) {
       args.push('-reconfigure');
+    }
+
+    if (options?.backend === false) {
+      args.push('-backend=false');
+    }
+
+    if (options?.getPlugins === false) {
+      args.push('-get-plugins=false');
+    }
+
+    if (options?.verifyPlugins === false) {
+      args.push('-verify-plugins=false');
+    }
+
+    // Handle backend configuration files first (lower precedence)
+    if (options?.backendConfigFiles) {
+      this.addBackendConfigFileArgs(args, options.backendConfigFiles);
+    }
+
+    // Handle backend configuration CLI arguments second (higher precedence)
+    if (options?.backendConfig) {
+      this.addBackendConfigArgs(args, options.backendConfig);
+    }
+
+    // Handle plugin directories
+    if (options?.pluginDir) {
+      const pluginDirs = Array.isArray(options.pluginDir) ? options.pluginDir : [options.pluginDir];
+      pluginDirs.forEach(dir => {
+        args.push(`-plugin-dir=${dir}`);
+      });
     }
 
     try {
@@ -213,5 +254,27 @@ export class Tofu {
         args.push(`-var=${key}=${value}`);
       });
     }
+  }
+
+  /**
+   * Helper method to add backend configuration file arguments
+   */
+  private addBackendConfigFileArgs(args: string[], backendConfigFiles: string | string[]): void {
+    const files = Array.isArray(backendConfigFiles) ? backendConfigFiles : [backendConfigFiles];
+    files.forEach(file => {
+      args.push(`-backend-config=${file}`);
+    });
+  }
+
+  /**
+   * Helper method to add backend configuration CLI arguments
+   */
+  private addBackendConfigArgs(
+    args: string[],
+    backendConfig: Record<string, string | number | boolean>
+  ): void {
+    Object.entries(backendConfig).forEach(([key, value]) => {
+      args.push(`-backend-config=${key}=${value}`);
+    });
   }
 }

@@ -73,6 +73,128 @@ await tofu.init({ upgrade: true });
 await tofu.init({ reconfigure: true });
 ```
 
+#### Backend Configuration
+
+MaPoTypeFu supports partial backend configuration, allowing you to specify backend settings via files and key-value pairs. You can combine both approaches, where CLI arguments take precedence over file settings.
+
+```typescript
+// Using backend configuration files
+await tofu.init({ 
+  backendConfigFiles: 'backend.hcl' 
+});
+
+await tofu.init({ 
+  backendConfigFiles: ['backend.hcl', 'secrets.hcl'] 
+});
+
+// Using key-value pairs for S3 backend
+await tofu.init({ 
+  backendConfig: {
+    bucket: 'my-terraform-state-bucket',
+    key: 'prod/terraform.tfstate',
+    region: 'us-west-2',
+    encrypt: true,
+    dynamodb_table: 'terraform-locks'
+  }
+});
+
+// Combining backend config files with CLI arguments (CLI takes precedence)
+await tofu.init({ 
+  backendConfigFiles: ['base-config.hcl', 'secrets.hcl'],
+  backendConfig: {
+    bucket: 'override-bucket',  // This overrides any bucket setting in files
+    region: 'us-east-1',        // This overrides any region setting in files
+    encrypt: true               // This overrides any encrypt setting in files
+  }
+});
+
+// Using key-value pairs for Azure backend
+await tofu.init({ 
+  backendConfig: {
+    storage_account_name: 'mystorageaccount',
+    container_name: 'tfstate',
+    key: 'prod.terraform.tfstate',
+    resource_group_name: 'myresourcegroup'
+  }
+});
+
+// Using key-value pairs for GCS backend
+await tofu.init({ 
+  backendConfig: {
+    bucket: 'my-gcs-bucket',
+    prefix: 'terraform/state',
+    credentials: 'path/to/service-account.json'
+  }
+});
+
+// Initialize without backend (local state)
+await tofu.init({ 
+  backend: false 
+});
+
+// Initialize with custom plugin directory
+await tofu.init({ 
+  pluginDir: '/custom/plugins',
+  verifyPlugins: false
+});
+
+// Complete initialization with all options
+await tofu.init({ 
+  upgrade: true,
+  reconfigure: true,
+  backendConfigFiles: 'base-backend.hcl',  // Base configuration from file
+  backendConfig: {
+    bucket: 'production-terraform-state',   // CLI override
+    key: 'infrastructure/terraform.tfstate',
+    region: 'us-east-1',                    // CLI override
+    encrypt: true                           // CLI override
+  },
+  pluginDir: ['/opt/terraform-plugins', '/custom/plugins'],
+  verifyPlugins: true
+});
+```
+
+**Backend Configuration Precedence:**
+
+When combining backend config files with CLI arguments:
+1. **Backend config files** are processed first (lower precedence)
+2. **CLI arguments** are processed second (higher precedence)
+3. CLI arguments will **override** any conflicting settings from config files
+
+This allows you to have base configuration in files and override specific settings programmatically.
+
+**Example Backend Configuration Files:**
+
+`base-backend.hcl`:
+```hcl
+bucket = "default-terraform-state-bucket"
+key    = "default/terraform.tfstate"
+region = "us-west-2"
+encrypt = true
+dynamodb_table = "terraform-locks"
+```
+
+`secrets.hcl`:
+```hcl
+access_key = "AKIA..."
+secret_key = "..."
+```
+
+**Combined Usage Example:**
+```typescript
+// This will use base-backend.hcl for most settings,
+// but override bucket and region via CLI arguments
+await tofu.init({ 
+  backendConfigFiles: ['base-backend.hcl', 'secrets.hcl'],
+  backendConfig: {
+    bucket: 'production-state-bucket',  // Overrides bucket from file
+    region: 'us-east-1'                 // Overrides region from file
+    // encrypt and dynamodb_table will come from base-backend.hcl
+    // access_key and secret_key will come from secrets.hcl
+  }
+});
+```
+
 #### Planning with Options
 
 ```typescript
