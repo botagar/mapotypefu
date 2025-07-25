@@ -19,19 +19,34 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "09:00"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 3  # Reduced from 10 to minimize conflicts
     commit-message:
       prefix: "chore"
       include: "scope"
-    # Group minor and patch updates together to reduce PR noise
+    # Group ALL updates together to create fewer PRs
     groups:
-      development-dependencies:
-        dependency-type: "development"
+      all-dependencies:
+        patterns:
+          - "*"
         update-types:
           - "minor"
           - "patch"
-      production-dependencies:
-        dependency-type: "production"
+      major-updates:
+        patterns:
+          - "*"
         update-types:
-          - "minor"
-          - "patch"
+          - "major"
+
+  # Lockfile maintenance to keep pnpm-lock.yaml up to date
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 1
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    # Only update lockfile, not package versions
+    versioning-strategy: lockfile-only

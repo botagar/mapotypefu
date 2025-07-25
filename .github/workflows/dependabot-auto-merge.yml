@@ -19,10 +19,29 @@ jobs:
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
 
+      - name: Check PR status
+        id: pr-status
+        run: |
+          PR_DATA=$(gh pr view "$PR_URL" --json mergeable,mergeStateStatus)
+          echo "mergeable=$(echo $PR_DATA | jq -r '.mergeable')" >> $GITHUB_OUTPUT
+          echo "merge_state=$(echo $PR_DATA | jq -r '.mergeStateStatus')" >> $GITHUB_OUTPUT
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Rebase if conflicts
+        if: steps.pr-status.outputs.merge_state == 'DIRTY'
+        run: |
+          gh pr comment "$PR_URL" --body "@dependabot rebase"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
       - name: Enable auto-merge for Dependabot PRs
         if: |
-          steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
-          steps.metadata.outputs.update-type == 'version-update:semver-minor'
+          steps.pr-status.outputs.mergeable == 'MERGEABLE' &&
+          (steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+           steps.metadata.outputs.update-type == 'version-update:semver-minor')
         run: gh pr merge --auto --squash "$PR_URL"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
