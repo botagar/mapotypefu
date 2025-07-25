@@ -1,3 +1,33 @@
+# [2.0.0](https://github.com/botagar/mapotypefu/compare/v1.1.1...v2.0.0) (2025-07-25)
+
+
+### Code Refactoring
+
+* remove legacy backend config support for cleaner API ([a094153](https://github.com/botagar/mapotypefu/commit/a094153e0f31a31ad4e180f3023e6b318024c473))
+
+
+### Features
+
+* add partial backend configuration support to init command ([d8a63f2](https://github.com/botagar/mapotypefu/commit/d8a63f222c82e3605504370eac0e71d8280312af))
+* enhance backend config to support combining files and CLI args ([ec26d74](https://github.com/botagar/mapotypefu/commit/ec26d74e6e2739e8efe88521c52b9ed66fc82bcf))
+
+
+### BREAKING CHANGES
+
+* Remove backward compatibility for backendConfig parameter
+
+- backendConfigFiles: string | string[] - explicit parameter for backend config files
+- backendConfig: Record<string, string | number | boolean> - explicit parameter for CLI arguments
+- Remove ambiguous backendConfig usage that supported both files and objects
+- Simplify implementation by removing legacy handling logic
+- Update all tests to use clean API (21 tests passing)
+- Update documentation to remove legacy references
+- Update examples to demonstrate clean API usage
+
+This creates a cleaner, more explicit API where the purpose of each parameter
+is clear and unambiguous. Since this is a single-user library, breaking
+changes are acceptable for better API design.
+
 ## [1.1.1](https://github.com/botagar/mapotypefu/compare/v1.1.0...v1.1.1) (2025-07-25)
 
 

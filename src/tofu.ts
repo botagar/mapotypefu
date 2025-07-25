@@ -90,7 +90,7 @@ export class Tofu {
     // Handle plugin directories
     if (options?.pluginDir) {
       const pluginDirs = Array.isArray(options.pluginDir) ? options.pluginDir : [options.pluginDir];
-      pluginDirs.forEach(dir => {
+      pluginDirs.forEach((dir) => {
         args.push(`-plugin-dir=${dir}`);
       });
     }
@@ -261,7 +261,7 @@ export class Tofu {
    */
   private addBackendConfigFileArgs(args: string[], backendConfigFiles: string | string[]): void {
     const files = Array.isArray(backendConfigFiles) ? backendConfigFiles : [backendConfigFiles];
-    files.forEach(file => {
+    files.forEach((file) => {
       args.push(`-backend-config=${file}`);
     });
   }
