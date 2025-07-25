@@ -73,6 +73,94 @@ await tofu.init({ upgrade: true });
 await tofu.init({ reconfigure: true });
 ```
 
+#### Backend Configuration
+
+MaPoTypeFu supports partial backend configuration, allowing you to specify backend settings via files or key-value pairs:
+
+```typescript
+// Using a backend configuration file
+await tofu.init({ 
+  backendConfig: 'backend.hcl' 
+});
+
+// Using multiple backend configuration files
+await tofu.init({ 
+  backendConfig: ['backend.hcl', 'secrets.hcl'] 
+});
+
+// Using key-value pairs for S3 backend
+await tofu.init({ 
+  backendConfig: {
+    bucket: 'my-terraform-state-bucket',
+    key: 'prod/terraform.tfstate',
+    region: 'us-west-2',
+    encrypt: true,
+    dynamodb_table: 'terraform-locks'
+  }
+});
+
+// Using key-value pairs for Azure backend
+await tofu.init({ 
+  backendConfig: {
+    storage_account_name: 'mystorageaccount',
+    container_name: 'tfstate',
+    key: 'prod.terraform.tfstate',
+    resource_group_name: 'myresourcegroup'
+  }
+});
+
+// Using key-value pairs for GCS backend
+await tofu.init({ 
+  backendConfig: {
+    bucket: 'my-gcs-bucket',
+    prefix: 'terraform/state',
+    credentials: 'path/to/service-account.json'
+  }
+});
+
+// Initialize without backend (local state)
+await tofu.init({ 
+  backend: false 
+});
+
+// Initialize with custom plugin directory
+await tofu.init({ 
+  pluginDir: '/custom/plugins',
+  verifyPlugins: false
+});
+
+// Complete initialization with all options
+await tofu.init({ 
+  upgrade: true,
+  reconfigure: true,
+  backendConfig: {
+    bucket: 'production-terraform-state',
+    key: 'infrastructure/terraform.tfstate',
+    region: 'us-east-1',
+    encrypt: true
+  },
+  pluginDir: ['/opt/terraform-plugins', '/custom/plugins'],
+  verifyPlugins: true
+});
+```
+
+**Example Backend Configuration Files:**
+
+`backend.hcl`:
+```hcl
+bucket = "my-terraform-state-bucket"
+key    = "prod/terraform.tfstate"
+region = "us-west-2"
+encrypt = true
+dynamodb_table = "terraform-locks"
+```
+
+`secrets.hcl`:
+```hcl
+access_key = "AKIA..."
+secret_key = "..."
+```
+
 #### Planning with Options
 
 ```typescript

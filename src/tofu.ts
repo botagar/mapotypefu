@@ -11,6 +11,16 @@ export interface TofuOptions {
   tofuPath?: string;
 }
 
+export interface InitOptions {
+  upgrade?: boolean;
+  reconfigure?: boolean;
+  backendConfig?: string | string[] | Record<string, string | number | boolean>;
+  backend?: boolean;
+  getPlugins?: boolean;
+  pluginDir?: string | string[];
+  verifyPlugins?: boolean;
+}
+
 export interface PlanResult {
   summary: string;
   changes: {
@@ -43,7 +53,7 @@ export class Tofu {
   /**
    * Initialize a OpenTofu working directory
    */
-  async init(options?: { upgrade?: boolean; reconfigure?: boolean }): Promise<string> {
+  async init(options?: InitOptions): Promise<string> {
     const args = ['init'];
 
     if (options?.upgrade) {
@@ -52,6 +62,31 @@ export class Tofu {
 
     if (options?.reconfigure) {
       args.push('-reconfigure');
+    }
+
+    if (options?.backend === false) {
+      args.push('-backend=false');
+    }
+
+    if (options?.getPlugins === false) {
+      args.push('-get-plugins=false');
+    }
+
+    if (options?.verifyPlugins === false) {
+      args.push('-verify-plugins=false');
+    }
+
+    // Handle backend configuration
+    if (options?.backendConfig) {
+      this.addBackendConfigArgs(args, options.backendConfig);
+    }
+
+    // Handle plugin directories
+    if (options?.pluginDir) {
+      const pluginDirs = Array.isArray(options.pluginDir) ? options.pluginDir : [options.pluginDir];
+      pluginDirs.forEach(dir => {
+        args.push(`-plugin-dir=${dir}`);
+      });
     }
 
     try {
@@ -211,6 +246,29 @@ export class Tofu {
     if (this.options.variables) {
       Object.entries(this.options.variables).forEach(([key, value]) => {
         args.push(`-var=${key}=${value}`);
+      });
+    }
+  }
+
+  /**
+   * Helper method to add backend configuration arguments
+   */
+  private addBackendConfigArgs(
+    args: string[],
+    backendConfig: string | string[] | Record<string, string | number | boolean>
+  ): void {
+    if (typeof backendConfig === 'string') {
+      // Single backend config file
+      args.push(`-backend-config=${backendConfig}`);
+    } else if (Array.isArray(backendConfig)) {
+      // Multiple backend config files
+      backendConfig.forEach(config => {
+        args.push(`-backend-config=${config}`);
+      });
+    } else {
+      // Backend config as key-value pairs
+      Object.entries(backendConfig).forEach(([key, value]) => {
+        args.push(`-backend-config=${key}=${value}`);
       });
     }
   }

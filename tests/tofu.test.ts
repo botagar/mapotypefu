@@ -39,6 +39,88 @@ describe('Tofu', () => {
     expect(execa).toHaveBeenCalledWith('tofu', ['init', '-upgrade', '-reconfigure'], expect.any(Object));
   });
 
+  test('should initialize with backend disabled', async () => {
+    await tofu.init({ backend: false });
+    expect(execa).toHaveBeenCalledWith('tofu', ['init', '-backend=false'], expect.any(Object));
+  });
+
+  test('should initialize with plugin options', async () => {
+    await tofu.init({ 
+      getPlugins: false, 
+      verifyPlugins: false,
+      pluginDir: '/custom/plugins'
+    });
+    expect(execa).toHaveBeenCalledWith('tofu', [
+      'init', 
+      '-get-plugins=false', 
+      '-verify-plugins=false',
+      '-plugin-dir=/custom/plugins'
+    ], expect.any(Object));
+  });
+
+  test('should initialize with multiple plugin directories', async () => {
+    await tofu.init({ 
+      pluginDir: ['/plugins1', '/plugins2']
+    });
+    expect(execa).toHaveBeenCalledWith('tofu', [
+      'init', 
+      '-plugin-dir=/plugins1',
+      '-plugin-dir=/plugins2'
+    ], expect.any(Object));
+  });
+
+  test('should initialize with backend config file', async () => {
+    await tofu.init({ backendConfig: 'backend.hcl' });
+    expect(execa).toHaveBeenCalledWith('tofu', ['init', '-backend-config=backend.hcl'], expect.any(Object));
+  });
+
+  test('should initialize with multiple backend config files', async () => {
+    await tofu.init({ backendConfig: ['backend1.hcl', 'backend2.hcl'] });
+    expect(execa).toHaveBeenCalledWith('tofu', [
+      'init', 
+      '-backend-config=backend1.hcl',
+      '-backend-config=backend2.hcl'
+    ], expect.any(Object));
+  });
+
+  test('should initialize with backend config key-value pairs', async () => {
+    await tofu.init({ 
+      backendConfig: {
+        bucket: 'my-terraform-state',
+        key: 'prod/terraform.tfstate',
+        region: 'us-west-2',
+        encrypt: true
+      }
+    });
+    expect(execa).toHaveBeenCalledWith('tofu', [
+      'init',
+      '-backend-config=bucket=my-terraform-state',
+      '-backend-config=key=prod/terraform.tfstate',
+      '-backend-config=region=us-west-2',
+      '-backend-config=encrypt=true'
+    ], expect.any(Object));
+  });
+
+  test('should initialize with mixed backend and other options', async () => {
+    await tofu.init({ 
+      upgrade: true,
+      reconfigure: true,
+      backendConfig: {
+        bucket: 'my-state-bucket',
+        region: 'us-east-1'
+      },
+      pluginDir: '/custom/plugins'
+    });
+    expect(execa).toHaveBeenCalledWith('tofu', [
+      'init',
+      '-upgrade',
+      '-reconfigure',
+      '-backend-config=bucket=my-state-bucket',
+      '-backend-config=region=us-east-1',
+      '-plugin-dir=/custom/plugins'
+    ], expect.any(Object));
+  });
+
   test('should generate a plan', async () => {
     (execa as jest.Mock).mockResolvedValueOnce({
       stdout: 'Plan: 1 to add, 2 to change, 3 to destroy.',

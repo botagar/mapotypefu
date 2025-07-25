@@ -26,13 +26,49 @@ new Tofu(options?: TofuOptions)
 Initialize a OpenTofu working directory.
 
 ```typescript
-async init(options?: { upgrade?: boolean, reconfigure?: boolean }): Promise<string>
+async init(options?: InitOptions): Promise<string>
 ```
+
+#### InitOptions
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| options.upgrade | boolean | false | Whether to upgrade modules and plugins |
-| options.reconfigure | boolean | false | Reconfigure the backend, ignoring any saved configuration |
+| upgrade | boolean | false | Whether to upgrade modules and plugins |
+| reconfigure | boolean | false | Reconfigure the backend, ignoring any saved configuration |
+| backendConfig | string \| string[] \| Record<string, string \| number \| boolean> | undefined | Backend configuration file(s) or key-value pairs |
+| backend | boolean | true | Whether to configure the backend |
+| getPlugins | boolean | true | Whether to download plugins |
+| pluginDir | string \| string[] | undefined | Directory(ies) containing plugin binaries |
+| verifyPlugins | boolean | true | Whether to verify plugin signatures |
+
+**Backend Configuration Examples:**
+
+```typescript
+// Using a backend configuration file
+await tofu.init({ backendConfig: 'backend.hcl' });
+
+// Using multiple backend configuration files
+await tofu.init({ backendConfig: ['backend.hcl', 'secrets.hcl'] });
+
+// Using key-value pairs for backend configuration
+await tofu.init({ 
+  backendConfig: {
+    bucket: 'my-terraform-state',
+    key: 'prod/terraform.tfstate',
+    region: 'us-west-2',
+    encrypt: true
+  }
+});
+
+// Disable backend configuration
+await tofu.init({ backend: false });
+
+// Custom plugin directory
+await tofu.init({ pluginDir: '/custom/plugins' });
+
+// Multiple plugin directories
+await tofu.init({ pluginDir: ['/plugins1', '/plugins2'] });
+```
 
 Returns: A promise that resolves to the output of the init command.
 
