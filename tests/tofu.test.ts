@@ -101,10 +101,69 @@ describe('Tofu', () => {
     ], expect.any(Object));
   });
 
+  test('should initialize with separate backend config files parameter', async () => {
+    await tofu.init({ backendConfigFiles: 'backend.hcl' });
+    expect(execa).toHaveBeenCalledWith('tofu', ['init', '-backend-config=backend.hcl'], expect.any(Object));
+  });
+
+  test('should initialize with multiple backend config files using separate parameter', async () => {
+    await tofu.init({ backendConfigFiles: ['backend1.hcl', 'backend2.hcl'] });
+    expect(execa).toHaveBeenCalledWith('tofu', [
+      'init', 
+      '-backend-config=backend1.hcl',
+      '-backend-config=backend2.hcl'
+    ], expect.any(Object));
+  });
+
+  test('should initialize with combined backend config files and CLI arguments', async () => {
+    await tofu.init({ 
+      backendConfigFiles: ['backend.hcl', 'secrets.hcl'],
+      backendConfig: {
+        bucket: 'override-bucket',
+        encrypt: true
+      }
+    });
+    expect(execa).toHaveBeenCalledWith('tofu', [
+      'init',
+      '-backend-config=backend.hcl',
+      '-backend-config=secrets.hcl',
+      '-backend-config=bucket=override-bucket',
+      '-backend-config=encrypt=true'
+    ], expect.any(Object));
+  });
+
+  test('should prioritize backendConfigFiles over legacy backendConfig for files', async () => {
+    await tofu.init({ 
+      backendConfigFiles: 'priority.hcl',
+      backendConfig: 'ignored.hcl'  // This should be ignored since backendConfigFiles is specified
+    });
+    expect(execa).toHaveBeenCalledWith('tofu', [
+      'init',
+      '-backend-config=priority.hcl'
+    ], expect.any(Object));
+  });
+
+  test('should combine backendConfigFiles with backendConfig key-value pairs', async () => {
+    await tofu.init({ 
+      backendConfigFiles: 'base-config.hcl',
+      backendConfig: {
+        region: 'us-east-1',
+        encrypt: true
+      }
+    });
+    expect(execa).toHaveBeenCalledWith('tofu', [
+      'init',
+      '-backend-config=base-config.hcl',
+      '-backend-config=region=us-east-1',
+      '-backend-config=encrypt=true'
+    ], expect.any(Object));
+  });
+
   test('should initialize with mixed backend and other options', async () => {
     await tofu.init({ 
       upgrade: true,
       reconfigure: true,
+      backendConfigFiles: 'base-backend.hcl',
       backendConfig: {
         bucket: 'my-state-bucket',
         region: 'us-east-1'
@@ -115,6 +174,7 @@ describe('Tofu', () => {
       'init',
       '-upgrade',
       '-reconfigure',
+      '-backend-config=base-backend.hcl',
       '-backend-config=bucket=my-state-bucket',
       '-backend-config=region=us-east-1',
       '-plugin-dir=/custom/plugins'
