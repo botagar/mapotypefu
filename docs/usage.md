@@ -75,20 +75,10 @@ await tofu.init({ reconfigure: true });
 
 #### Backend Configuration
 
-MaPoTypeFu supports partial backend configuration, allowing you to specify backend settings via files or key-value pairs. You can also combine both approaches, where CLI arguments take precedence over file settings.
+MaPoTypeFu supports partial backend configuration, allowing you to specify backend settings via files and key-value pairs. You can combine both approaches, where CLI arguments take precedence over file settings.
 
 ```typescript
-// Using a backend configuration file (legacy approach)
-await tofu.init({ 
-  backendConfig: 'backend.hcl' 
-});
-
-// Using multiple backend configuration files (legacy approach)
-await tofu.init({ 
-  backendConfig: ['backend.hcl', 'secrets.hcl'] 
-});
-
-// Using separate parameters (recommended approach)
+// Using backend configuration files
 await tofu.init({ 
   backendConfigFiles: 'backend.hcl' 
 });

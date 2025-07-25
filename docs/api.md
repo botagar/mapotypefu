@@ -36,7 +36,7 @@ async init(options?: InitOptions): Promise<string>
 | upgrade | boolean | false | Whether to upgrade modules and plugins |
 | reconfigure | boolean | false | Reconfigure the backend, ignoring any saved configuration |
 | backendConfigFiles | string \| string[] | undefined | Backend configuration file(s) |
-| backendConfig | string \| string[] \| Record<string, string \| number \| boolean> | undefined | Backend configuration (files for backward compatibility or key-value pairs) |
+| backendConfig | Record<string, string \| number \| boolean> | undefined | Backend configuration key-value pairs (CLI arguments) |
 | backend | boolean | true | Whether to configure the backend |
 | getPlugins | boolean | true | Whether to download plugins |
 | pluginDir | string \| string[] | undefined | Directory(ies) containing plugin binaries |
@@ -45,11 +45,7 @@ async init(options?: InitOptions): Promise<string>
 **Backend Configuration Examples:**
 
 ```typescript
-// Using backend configuration files (legacy approach)
-await tofu.init({ backendConfig: 'backend.hcl' });
-await tofu.init({ backendConfig: ['backend.hcl', 'secrets.hcl'] });
-
-// Using separate parameters (recommended approach)
+// Using backend configuration files
 await tofu.init({ backendConfigFiles: 'backend.hcl' });
 await tofu.init({ backendConfigFiles: ['backend.hcl', 'secrets.hcl'] });
 
@@ -93,17 +89,10 @@ await tofu.init({ pluginDir: ['/plugins1', '/plugins2'] });
 
 **Backend Configuration Precedence:**
 
-When both `backendConfigFiles` and `backendConfig` (as key-value pairs) are specified:
+When both `backendConfigFiles` and `backendConfig` are specified:
 1. Backend config files are processed first (lower precedence)
 2. CLI arguments from `backendConfig` are processed second (higher precedence)
 3. CLI arguments will override any conflicting settings from config files
-
-**Backward Compatibility:**
-
-The `backendConfig` parameter maintains backward compatibility:
-- When used with strings or string arrays, it behaves as backend config files
-- When used with objects, it behaves as CLI arguments
-- When `backendConfigFiles` is specified, string/array values in `backendConfig` are ignored
 
 Returns: A promise that resolves to the output of the init command.
 

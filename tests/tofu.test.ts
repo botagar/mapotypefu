@@ -69,13 +69,13 @@ describe('Tofu', () => {
     ], expect.any(Object));
   });
 
-  test('should initialize with backend config file', async () => {
-    await tofu.init({ backendConfig: 'backend.hcl' });
+  test('should initialize with backend config files', async () => {
+    await tofu.init({ backendConfigFiles: 'backend.hcl' });
     expect(execa).toHaveBeenCalledWith('tofu', ['init', '-backend-config=backend.hcl'], expect.any(Object));
   });
 
   test('should initialize with multiple backend config files', async () => {
-    await tofu.init({ backendConfig: ['backend1.hcl', 'backend2.hcl'] });
+    await tofu.init({ backendConfigFiles: ['backend1.hcl', 'backend2.hcl'] });
     expect(execa).toHaveBeenCalledWith('tofu', [
       'init', 
       '-backend-config=backend1.hcl',
@@ -101,20 +101,6 @@ describe('Tofu', () => {
     ], expect.any(Object));
   });
 
-  test('should initialize with separate backend config files parameter', async () => {
-    await tofu.init({ backendConfigFiles: 'backend.hcl' });
-    expect(execa).toHaveBeenCalledWith('tofu', ['init', '-backend-config=backend.hcl'], expect.any(Object));
-  });
-
-  test('should initialize with multiple backend config files using separate parameter', async () => {
-    await tofu.init({ backendConfigFiles: ['backend1.hcl', 'backend2.hcl'] });
-    expect(execa).toHaveBeenCalledWith('tofu', [
-      'init', 
-      '-backend-config=backend1.hcl',
-      '-backend-config=backend2.hcl'
-    ], expect.any(Object));
-  });
-
   test('should initialize with combined backend config files and CLI arguments', async () => {
     await tofu.init({ 
       backendConfigFiles: ['backend.hcl', 'secrets.hcl'],
@@ -128,33 +114,6 @@ describe('Tofu', () => {
       '-backend-config=backend.hcl',
       '-backend-config=secrets.hcl',
       '-backend-config=bucket=override-bucket',
-      '-backend-config=encrypt=true'
-    ], expect.any(Object));
-  });
-
-  test('should prioritize backendConfigFiles over legacy backendConfig for files', async () => {
-    await tofu.init({ 
-      backendConfigFiles: 'priority.hcl',
-      backendConfig: 'ignored.hcl'  // This should be ignored since backendConfigFiles is specified
-    });
-    expect(execa).toHaveBeenCalledWith('tofu', [
-      'init',
-      '-backend-config=priority.hcl'
-    ], expect.any(Object));
-  });
-
-  test('should combine backendConfigFiles with backendConfig key-value pairs', async () => {
-    await tofu.init({ 
-      backendConfigFiles: 'base-config.hcl',
-      backendConfig: {
-        region: 'us-east-1',
-        encrypt: true
-      }
-    });
-    expect(execa).toHaveBeenCalledWith('tofu', [
-      'init',
-      '-backend-config=base-config.hcl',
-      '-backend-config=region=us-east-1',
       '-backend-config=encrypt=true'
     ], expect.any(Object));
   });

@@ -1,8 +1,8 @@
 import { Tofu } from '../src/tofu';
 
 /**
- * Example demonstrating various backend configuration options including
- * the new combined approach where CLI arguments take precedence over files
+ * Example demonstrating backend configuration options with the clean API
+ * where backendConfigFiles and backendConfig are separate parameters
  */
 async function demonstrateBackendConfig() {
   console.log('=== Backend Configuration Examples ===\n');
@@ -11,30 +11,19 @@ async function demonstrateBackendConfig() {
     workingDirectory: './infrastructure'
   });
 
-  // Example 1: Using a backend configuration file (legacy approach)
-  console.log('1. Using backend configuration file (legacy):');
-  try {
-    await tofuWithFile.init({ 
-      backendConfig: 'backend.hcl' 
-    });
-    console.log('✓ Initialized with backend config file\n');
-  } catch (error) {
-    console.log(`✗ Error: ${error}\n`);
-  }
-
-  // Example 2: Using separate parameters (recommended approach)
-  console.log('2. Using separate backendConfigFiles parameter:');
+  // Example 1: Using backend configuration files
+  console.log('1. Using backend configuration files:');
   try {
     await tofuWithFile.init({ 
       backendConfigFiles: ['backend.hcl', 'secrets.hcl'] 
     });
-    console.log('✓ Initialized with separate backend config files parameter\n');
+    console.log('✓ Initialized with backend config files\n');
   } catch (error) {
     console.log(`✗ Error: ${error}\n`);
   }
 
-  // Example 3: Using key-value pairs for S3 backend
-  console.log('3. Using key-value pairs for S3 backend:');
+  // Example 2: Using key-value pairs for S3 backend
+  console.log('2. Using key-value pairs for S3 backend:');
   try {
     await tofuWithFile.init({ 
       backendConfig: {
@@ -50,8 +39,8 @@ async function demonstrateBackendConfig() {
     console.log(`✗ Error: ${error}\n`);
   }
 
-  // Example 4: Combining backend config files with CLI arguments (NEW FEATURE)
-  console.log('4. Combining backend config files with CLI arguments:');
+  // Example 3: Combining backend config files with CLI arguments
+  console.log('3. Combining backend config files with CLI arguments:');
   try {
     await tofuWithFile.init({ 
       backendConfigFiles: ['base-config.hcl', 'secrets.hcl'],
@@ -66,8 +55,8 @@ async function demonstrateBackendConfig() {
     console.log(`✗ Error: ${error}\n`);
   }
 
-  // Example 5: Environment-specific overrides
-  console.log('5. Environment-specific backend configuration:');
+  // Example 4: Environment-specific overrides
+  console.log('4. Environment-specific backend configuration:');
   const environment = 'production'; // Could be from process.env.NODE_ENV
   try {
     await tofuWithFile.init({ 
@@ -83,8 +72,8 @@ async function demonstrateBackendConfig() {
     console.log(`✗ Error: ${error}\n`);
   }
 
-  // Example 6: Azure backend with file + CLI combination
-  console.log('6. Azure backend with combined configuration:');
+  // Example 5: Azure backend with file + CLI combination
+  console.log('5. Azure backend with combined configuration:');
   try {
     await tofuWithFile.init({ 
       backendConfigFiles: 'azure-base.hcl',
@@ -94,6 +83,21 @@ async function demonstrateBackendConfig() {
       }
     });
     console.log('✓ Initialized with Azure backend (combined configuration)\n');
+  } catch (error) {
+    console.log(`✗ Error: ${error}\n`);
+  }
+
+  // Example 6: GCS backend with key-value pairs only
+  console.log('6. GCS backend with key-value pairs:');
+  try {
+    await tofuWithFile.init({ 
+      backendConfig: {
+        bucket: 'my-gcs-bucket',
+        prefix: 'terraform/state',
+        credentials: 'path/to/service-account.json'
+      }
+    });
+    console.log('✓ Initialized with GCS backend configuration\n');
   } catch (error) {
     console.log(`✗ Error: ${error}\n`);
   }
@@ -119,13 +123,15 @@ async function demonstrateBackendConfig() {
     console.log(`✗ Error: ${error}\n`);
   }
 
-  // Example 8: Backward compatibility test
-  console.log('8. Backward compatibility - legacy backendConfig usage:');
+  // Example 8: Disable backend (local state)
+  console.log('8. Disable backend for local state:');
   try {
     await tofuWithFile.init({ 
-      backendConfig: ['legacy-backend.hcl', 'legacy-secrets.hcl']
+      backend: false,
+      pluginDir: '/custom/plugins',
+      verifyPlugins: false
     });
-    console.log('✓ Backward compatibility maintained\n');
+    console.log('✓ Initialized without backend, using local state\n');
   } catch (error) {
     console.log(`✗ Error: ${error}\n`);
   }
@@ -163,6 +169,11 @@ Example:
 - base-backend.hcl sets bucket = "default-bucket"
 - CLI argument sets bucket = "override-bucket"
 - Result: bucket = "override-bucket" (CLI wins)
+
+Clean API Design:
+- backendConfigFiles: string | string[] - for backend config files
+- backendConfig: Record<string, string | number | boolean> - for CLI arguments
+- No ambiguity, clear separation of concerns
 `);
 
 // Run the demonstration

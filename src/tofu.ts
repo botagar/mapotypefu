@@ -15,7 +15,7 @@ export interface InitOptions {
   upgrade?: boolean;
   reconfigure?: boolean;
   backendConfigFiles?: string | string[];
-  backendConfig?: string | string[] | Record<string, string | number | boolean>;
+  backendConfig?: Record<string, string | number | boolean>;
   backend?: boolean;
   getPlugins?: boolean;
   pluginDir?: string | string[];
@@ -77,22 +77,14 @@ export class Tofu {
       args.push('-verify-plugins=false');
     }
 
-    // Handle backend configuration with new separate parameters
+    // Handle backend configuration files first (lower precedence)
     if (options?.backendConfigFiles) {
       this.addBackendConfigFileArgs(args, options.backendConfigFiles);
     }
 
-    // Handle backend configuration - support both new and legacy usage
+    // Handle backend configuration CLI arguments second (higher precedence)
     if (options?.backendConfig) {
-      if (typeof options.backendConfig === 'string' || Array.isArray(options.backendConfig)) {
-        // Legacy usage: backendConfig as file(s) - only if backendConfigFiles not specified
-        if (!options.backendConfigFiles) {
-          this.addBackendConfigFileArgs(args, options.backendConfig as string | string[]);
-        }
-      } else {
-        // New usage: backendConfig as key-value pairs (CLI arguments)
-        this.addBackendConfigArgs(args, options.backendConfig);
-      }
+      this.addBackendConfigArgs(args, options.backendConfig);
     }
 
     // Handle plugin directories
