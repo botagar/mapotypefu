@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/botagar/mapotypefu/compare/v1.1.0...v1.1.1) (2025-07-25)
+
+
+### Bug Fixes
+
+* resolve pnpm version conflict in CI workflow ([6b8d95f](https://github.com/botagar/mapotypefu/commit/6b8d95f4f0344ebb3b1a7b468c58066d6d681ebc))
+
 # [1.1.0](https://github.com/botagar/mapotypefu/compare/v1.0.2...v1.1.0) (2025-07-08)
 
 
