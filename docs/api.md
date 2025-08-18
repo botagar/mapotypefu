@@ -41,6 +41,29 @@ async init(options?: InitOptions): Promise<string>
 | getPlugins | boolean | true | Whether to download plugins |
 | pluginDir | string \| string[] | undefined | Directory(ies) containing plugin binaries |
 | verifyPlugins | boolean | true | Whether to verify plugin signatures |
+| variables | Record<string, string \| number \| boolean> | undefined | Variables to pass to OpenTofu during initialization (merged with constructor variables) |
+
+**Variable Merging Behavior:**
+
+Variables passed to the `init` method are merged with variables from the constructor. Init-specific variables take precedence over constructor variables when there are conflicts.
+
+```typescript
+const tofu = new Tofu({
+  variables: {
+    environment: 'dev',
+    region: 'us-east-1'
+  }
+});
+
+// Init variables override constructor variables
+await tofu.init({
+  variables: {
+    environment: 'prod', // Overrides constructor value
+    bucket_name: 'my-state-bucket' // Additional variable
+  }
+});
+// Results in: environment=prod, region=us-east-1, bucket_name=my-state-bucket
+```
 
 **Backend Configuration Examples:**
 
@@ -56,6 +79,22 @@ await tofu.init({
     key: 'prod/terraform.tfstate',
     region: 'us-west-2',
     encrypt: true
+  }
+});
+
+// Using variables for parameterized backend configuration
+const environment = 'prod';
+const region = 'us-west-2';
+await tofu.init({
+  backendConfig: {
+    bucket: `terraform-state-${environment}`,
+    key: `${environment}/terraform.tfstate`,
+    region: region
+  },
+  variables: {
+    environment: environment,
+    region: region,
+    state_bucket: `terraform-state-${environment}`
   }
 });
 

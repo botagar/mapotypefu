@@ -1,180 +1,134 @@
-import { Tofu } from '../src/tofu';
-
 /**
- * Example demonstrating backend configuration options with the clean API
- * where backendConfigFiles and backendConfig are separate parameters
+ * Example demonstrating parameterized backend configuration using variables during init
+ * 
+ * This example shows how to use variables during initialization for dynamic backend configuration,
+ * which is particularly useful for multi-environment deployments where backend parameters
+ * need to be determined at runtime.
  */
-async function demonstrateBackendConfig() {
-  console.log('=== Backend Configuration Examples ===\n');
 
-  const tofuWithFile = new Tofu({
-    workingDirectory: './infrastructure'
+import { Tofu } from '../src';
+import * as path from 'path';
+
+async function deployWithDynamicBackend() {
+  // Environment-specific configuration
+  const environment = process.env.ENVIRONMENT || 'dev';
+  const region = process.env.AWS_REGION || 'us-west-2';
+  const accountId = process.env.AWS_ACCOUNT_ID || '123456789012';
+  
+  // Create Tofu instance with base variables
+  const tofu = new Tofu({
+    workingDirectory: path.join(__dirname, 'infrastructure'),
+    variables: {
+      // Base variables that are always needed
+      project_name: 'my-project',
+      owner: 'devops-team'
+    }
   });
 
-  // Example 1: Using backend configuration files
-  console.log('1. Using backend configuration files:');
   try {
-    await tofuWithFile.init({ 
-      backendConfigFiles: ['backend.hcl', 'secrets.hcl'] 
-    });
-    console.log('✓ Initialized with backend config files\n');
-  } catch (error) {
-    console.log(`✗ Error: ${error}\n`);
-  }
+    console.log(`Deploying to ${environment} environment in ${region}...`);
 
-  // Example 2: Using key-value pairs for S3 backend
-  console.log('2. Using key-value pairs for S3 backend:');
-  try {
-    await tofuWithFile.init({ 
+    // Initialize with environment-specific variables
+    // These variables can be used in backend configuration blocks
+    console.log('Initializing with dynamic backend configuration...');
+    const initResult = await tofu.init({
+      // Backend configuration using variables
       backendConfig: {
-        bucket: 'my-terraform-state-bucket',
-        key: 'prod/terraform.tfstate',
-        region: 'us-west-2',
+        bucket: `terraform-state-${accountId}-${region}`,
+        key: `${environment}/terraform.tfstate`,
+        region: region,
         encrypt: true,
-        dynamodb_table: 'terraform-locks'
-      }
-    });
-    console.log('✓ Initialized with S3 backend configuration\n');
-  } catch (error) {
-    console.log(`✗ Error: ${error}\n`);
-  }
-
-  // Example 3: Combining backend config files with CLI arguments
-  console.log('3. Combining backend config files with CLI arguments:');
-  try {
-    await tofuWithFile.init({ 
-      backendConfigFiles: ['base-config.hcl', 'secrets.hcl'],
-      backendConfig: {
-        bucket: 'override-bucket',  // This overrides any bucket setting in files
-        region: 'us-east-1',        // This overrides any region setting in files
-        encrypt: true               // This overrides any encrypt setting in files
-      }
-    });
-    console.log('✓ Initialized with combined backend configuration (CLI takes precedence)\n');
-  } catch (error) {
-    console.log(`✗ Error: ${error}\n`);
-  }
-
-  // Example 4: Environment-specific overrides
-  console.log('4. Environment-specific backend configuration:');
-  const environment = 'production'; // Could be from process.env.NODE_ENV
-  try {
-    await tofuWithFile.init({ 
-      backendConfigFiles: 'base-backend.hcl',  // Base configuration
-      backendConfig: {
-        key: `${environment}/terraform.tfstate`,           // Environment-specific key
-        bucket: `${environment}-terraform-state-bucket`,   // Environment-specific bucket
-        dynamodb_table: `${environment}-terraform-locks`   // Environment-specific lock table
-      }
-    });
-    console.log('✓ Initialized with environment-specific backend configuration\n');
-  } catch (error) {
-    console.log(`✗ Error: ${error}\n`);
-  }
-
-  // Example 5: Azure backend with file + CLI combination
-  console.log('5. Azure backend with combined configuration:');
-  try {
-    await tofuWithFile.init({ 
-      backendConfigFiles: 'azure-base.hcl',
-      backendConfig: {
-        key: 'prod.terraform.tfstate',
-        resource_group_name: 'prod-resources'  // Override for production
-      }
-    });
-    console.log('✓ Initialized with Azure backend (combined configuration)\n');
-  } catch (error) {
-    console.log(`✗ Error: ${error}\n`);
-  }
-
-  // Example 6: GCS backend with key-value pairs only
-  console.log('6. GCS backend with key-value pairs:');
-  try {
-    await tofuWithFile.init({ 
-      backendConfig: {
-        bucket: 'my-gcs-bucket',
-        prefix: 'terraform/state',
-        credentials: 'path/to/service-account.json'
-      }
-    });
-    console.log('✓ Initialized with GCS backend configuration\n');
-  } catch (error) {
-    console.log(`✗ Error: ${error}\n`);
-  }
-
-  // Example 7: Complete configuration with all options
-  console.log('7. Complete configuration example:');
-  try {
-    await tofuWithFile.init({ 
-      upgrade: true,
-      reconfigure: true,
-      backendConfigFiles: 'base-backend.hcl',
-      backendConfig: {
-        bucket: 'production-terraform-state',
-        key: 'infrastructure/terraform.tfstate',
-        region: 'us-east-1',
-        encrypt: true
+        dynamodb_table: `terraform-locks-${environment}`
       },
-      pluginDir: ['/opt/terraform-plugins', '/custom/plugins'],
-      verifyPlugins: true
+      // Additional variables for init that merge with constructor variables
+      variables: {
+        environment: environment,
+        region: region,
+        account_id: accountId,
+        // These variables can be referenced in terraform configuration
+        // for dynamic resource naming, tagging, etc.
+        state_bucket: `terraform-state-${accountId}-${region}`,
+        lock_table: `terraform-locks-${environment}`
+      }
     });
-    console.log('✓ Initialized with complete configuration\n');
-  } catch (error) {
-    console.log(`✗ Error: ${error}\n`);
-  }
+    
+    console.log('Initialization completed:', initResult);
 
-  // Example 8: Disable backend (local state)
-  console.log('8. Disable backend for local state:');
-  try {
-    await tofuWithFile.init({ 
-      backend: false,
-      pluginDir: '/custom/plugins',
-      verifyPlugins: false
-    });
-    console.log('✓ Initialized without backend, using local state\n');
+    // Generate plan with the merged variables
+    console.log('\nGenerating deployment plan...');
+    const plan = await tofu.plan();
+    console.log(`Plan: ${plan.changes.add} to add, ${plan.changes.change} to change, ${plan.changes.destroy} to destroy`);
+
+    // In a real scenario, you might want to review the plan before applying
+    if (plan.changes.add > 0 || plan.changes.change > 0 || plan.changes.destroy > 0) {
+      console.log('\nApplying changes...');
+      const applyResult = await tofu.apply();
+      console.log('Apply completed:', applyResult);
+
+      // Get outputs
+      console.log('\nRetrieving outputs...');
+      const outputs = await tofu.output({ json: true });
+      console.log('Deployment outputs:', JSON.stringify(outputs, null, 2));
+    } else {
+      console.log('No changes detected, skipping apply.');
+    }
+
   } catch (error) {
-    console.log(`✗ Error: ${error}\n`);
+    console.error('Deployment failed:', error.message);
+    process.exit(1);
   }
 }
 
-// Example backend configuration files content
-console.log('=== Example Backend Configuration Files ===\n');
+async function destroyEnvironment() {
+  const environment = process.env.ENVIRONMENT || 'dev';
+  const region = process.env.AWS_REGION || 'us-west-2';
+  const accountId = process.env.AWS_ACCOUNT_ID || '123456789012';
 
-console.log('base-backend.hcl:');
-console.log(`bucket = "default-terraform-state-bucket"
-key    = "default/terraform.tfstate"
-region = "us-west-2"
-encrypt = true
-dynamodb_table = "terraform-locks"
-`);
+  const tofu = new Tofu({
+    workingDirectory: path.join(__dirname, 'infrastructure'),
+    autoApprove: true, // Be careful with this in production!
+    variables: {
+      project_name: 'my-project',
+      owner: 'devops-team',
+      environment: environment,
+      region: region,
+      account_id: accountId
+    }
+  });
 
-console.log('secrets.hcl:');
-console.log(`access_key = "AKIA..."
-secret_key = "..."
-`);
+  try {
+    console.log(`Destroying ${environment} environment...`);
+    
+    // Initialize with the same backend configuration
+    await tofu.init({
+      backendConfig: {
+        bucket: `terraform-state-${accountId}-${region}`,
+        key: `${environment}/terraform.tfstate`,
+        region: region,
+        encrypt: true,
+        dynamodb_table: `terraform-locks-${environment}`
+      }
+    });
 
-console.log('azure-base.hcl:');
-console.log(`storage_account_name = "defaultstorageaccount"
-container_name = "tfstate"
-key = "default.terraform.tfstate"
-`);
+    // Destroy all resources
+    const destroyResult = await tofu.destroy();
+    console.log('Destroy completed:', destroyResult);
 
-console.log('=== Backend Configuration Precedence ===\n');
-console.log(`When combining files and CLI arguments:
-1. Backend config files are processed first (lower precedence)
-2. CLI arguments are processed second (higher precedence)
-3. CLI arguments override conflicting settings from files
+  } catch (error) {
+    console.error('Destroy failed:', error.message);
+    process.exit(1);
+  }
+}
 
-Example:
-- base-backend.hcl sets bucket = "default-bucket"
-- CLI argument sets bucket = "override-bucket"
-- Result: bucket = "override-bucket" (CLI wins)
+// Example usage
+if (require.main === module) {
+  const action = process.argv[2];
+  
+  if (action === 'destroy') {
+    destroyEnvironment().catch(console.error);
+  } else {
+    deployWithDynamicBackend().catch(console.error);
+  }
+}
 
-Clean API Design:
-- backendConfigFiles: string | string[] - for backend config files
-- backendConfig: Record<string, string | number | boolean> - for CLI arguments
-- No ambiguity, clear separation of concerns
-`);
-
-// Run the demonstration
-demonstrateBackendConfig().catch(console.error);
+export { deployWithDynamicBackend, destroyEnvironment };
