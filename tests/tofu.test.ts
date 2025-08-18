@@ -140,6 +140,98 @@ describe('Tofu', () => {
     ], expect.any(Object));
   });
 
+  test('should initialize with variables from init options only', async () => {
+    const tofuWithoutVars = new Tofu({
+      workingDirectory: './test-dir'
+    });
+    
+    await tofuWithoutVars.init({ 
+      variables: {
+        environment: 'test',
+        region: 'us-west-1'
+      }
+    });
+    
+    expect(execa).toHaveBeenCalledWith('tofu', [
+      'init',
+      '-var=environment=test',
+      '-var=region=us-west-1'
+    ], expect.any(Object));
+  });
+
+  test('should initialize with variables from constructor only', async () => {
+    const tofuWithVars = new Tofu({
+      workingDirectory: './test-dir',
+      variables: {
+        environment: 'prod',
+        instance_type: 't3.large'
+      }
+    });
+    
+    await tofuWithVars.init();
+    
+    expect(execa).toHaveBeenCalledWith('tofu', [
+      'init',
+      '-var=environment=prod',
+      '-var=instance_type=t3.large'
+    ], expect.any(Object));
+  });
+
+  test('should initialize with merged variables (init variables override constructor variables)', async () => {
+    const tofuWithVars = new Tofu({
+      workingDirectory: './test-dir',
+      variables: {
+        environment: 'dev',
+        region: 'us-east-1',
+        instance_type: 't3.micro'
+      }
+    });
+    
+    await tofuWithVars.init({ 
+      variables: {
+        environment: 'staging', // This should override constructor value
+        bucket_name: 'my-init-bucket' // This is additional
+      }
+    });
+    
+    expect(execa).toHaveBeenCalledWith('tofu', [
+      'init',
+      '-var=environment=staging',
+      '-var=region=us-east-1',
+      '-var=instance_type=t3.micro',
+      '-var=bucket_name=my-init-bucket'
+    ], expect.any(Object));
+  });
+
+  test('should initialize with variables and backend config together', async () => {
+    const tofuWithVars = new Tofu({
+      workingDirectory: './test-dir',
+      variables: {
+        environment: 'prod'
+      }
+    });
+    
+    await tofuWithVars.init({ 
+      backendConfig: {
+        bucket: 'terraform-state-bucket',
+        key: 'prod/terraform.tfstate'
+      },
+      variables: {
+        region: 'us-west-2',
+        backend_bucket: 'terraform-state-bucket'
+      }
+    });
+    
+    expect(execa).toHaveBeenCalledWith('tofu', [
+      'init',
+      '-backend-config=bucket=terraform-state-bucket',
+      '-backend-config=key=prod/terraform.tfstate',
+      '-var=environment=prod',
+      '-var=region=us-west-2',
+      '-var=backend_bucket=terraform-state-bucket'
+    ], expect.any(Object));
+  });
+
   test('should generate a plan', async () => {
     (execa as jest.Mock).mockResolvedValueOnce({
       stdout: 'Plan: 1 to add, 2 to change, 3 to destroy.',
@@ -161,6 +253,101 @@ describe('Tofu', () => {
   test('should plan with output file', async () => {
     await tofu.plan({ out: 'plan.out' });
     expect(execa).toHaveBeenCalledWith('tofu', ['plan', '-out=plan.out'], expect.any(Object));
+  });
+
+  test('should plan with detailed exit code', async () => {
+    await tofu.plan({ detailed: true });
+    expect(execa).toHaveBeenCalledWith('tofu', ['plan', '-detailed-exitcode'], expect.any(Object));
+  });
+
+  test('should plan with variables from plan options only', async () => {
+    const tofuWithoutVars = new Tofu({
+      workingDirectory: './test-dir'
+    });
+    
+    await tofuWithoutVars.plan({ 
+      variables: {
+        environment: 'test',
+        region: 'us-west-1'
+      }
+    });
+    
+    expect(execa).toHaveBeenCalledWith('tofu', [
+      'plan',
+      '-var=environment=test',
+      '-var=region=us-west-1'
+    ], expect.any(Object));
+  });
+
+  test('should plan with variables from constructor only', async () => {
+    const tofuWithVars = new Tofu({
+      workingDirectory: './test-dir',
+      variables: {
+        environment: 'prod',
+        instance_type: 't3.large'
+      }
+    });
+    
+    await tofuWithVars.plan();
+    
+    expect(execa).toHaveBeenCalledWith('tofu', [
+      'plan',
+      '-var=environment=prod',
+      '-var=instance_type=t3.large'
+    ], expect.any(Object));
+  });
+
+  test('should plan with merged variables (plan variables override constructor variables)', async () => {
+    const tofuWithVars = new Tofu({
+      workingDirectory: './test-dir',
+      variables: {
+        environment: 'dev',
+        region: 'us-east-1',
+        instance_type: 't3.micro'
+      }
+    });
+    
+    await tofuWithVars.plan({ 
+      variables: {
+        environment: 'staging', // This should override constructor value
+        replica_count: 3 // This is additional
+      }
+    });
+    
+    expect(execa).toHaveBeenCalledWith('tofu', [
+      'plan',
+      '-var=environment=staging',
+      '-var=region=us-east-1',
+      '-var=instance_type=t3.micro',
+      '-var=replica_count=3'
+    ], expect.any(Object));
+  });
+
+  test('should plan with variables and output file together', async () => {
+    const tofuWithVars = new Tofu({
+      workingDirectory: './test-dir',
+      variables: {
+        environment: 'prod'
+      }
+    });
+    
+    await tofuWithVars.plan({ 
+      out: 'production.plan',
+      detailed: true,
+      variables: {
+        region: 'us-west-2',
+        instance_count: 5
+      }
+    });
+    
+    expect(execa).toHaveBeenCalledWith('tofu', [
+      'plan',
+      '-out=production.plan',
+      '-detailed-exitcode',
+      '-var=environment=prod',
+      '-var=region=us-west-2',
+      '-var=instance_count=5'
+    ], expect.any(Object));
   });
 
   test('should apply changes', async () => {

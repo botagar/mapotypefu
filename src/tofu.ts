@@ -20,6 +20,13 @@ export interface InitOptions {
   getPlugins?: boolean;
   pluginDir?: string | string[];
   verifyPlugins?: boolean;
+  variables?: Record<string, string | number | boolean>;
+}
+
+export interface PlanOptions {
+  out?: string;
+  detailed?: boolean;
+  variables?: Record<string, string | number | boolean>;
 }
 
 export interface PlanResult {
@@ -95,6 +102,9 @@ export class Tofu {
       });
     }
 
+    // Add variables (merge constructor variables with init-specific variables)
+    this.addVariableArgs(args, options?.variables);
+
     try {
       const { stdout } = await this.runCommand(args);
       return stdout;
@@ -107,7 +117,7 @@ export class Tofu {
   /**
    * Generate an execution plan
    */
-  async plan(options?: { out?: string; detailed?: boolean }): Promise<PlanResult> {
+  async plan(options?: PlanOptions): Promise<PlanResult> {
     const args = ['plan'];
 
     if (options?.out) {
@@ -118,8 +128,8 @@ export class Tofu {
       args.push('-detailed-exitcode');
     }
 
-    // Add variables if specified
-    this.addVariableArgs(args);
+    // Add variables (merge constructor variables with plan-specific variables)
+    this.addVariableArgs(args, options?.variables);
 
     try {
       const { stdout } = await this.runCommand(args);
@@ -248,9 +258,19 @@ export class Tofu {
   /**
    * Helper method to add variable arguments
    */
-  private addVariableArgs(args: string[]): void {
-    if (this.options.variables) {
-      Object.entries(this.options.variables).forEach(([key, value]) => {
+  private addVariableArgs(
+    args: string[], 
+    additionalVariables?: Record<string, string | number | boolean>
+  ): void {
+    // Merge constructor variables with additional variables
+    // Additional variables take precedence over constructor variables
+    const mergedVariables = {
+      ...this.options.variables,
+      ...additionalVariables,
+    };
+
+    if (Object.keys(mergedVariables).length > 0) {
+      Object.entries(mergedVariables).forEach(([key, value]) => {
         args.push(`-var=${key}=${value}`);
       });
     }

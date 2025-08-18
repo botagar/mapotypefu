@@ -195,14 +195,264 @@ await tofu.init({
 });
 ```
 
+### Variables in Initialization
+
+MaPoTypeFu supports passing variables during initialization, which is particularly useful for parameterized backend configurations and dynamic infrastructure setups.
+
+#### Variable Merging Behavior
+
+Variables can be provided in two places:
+1. **Constructor variables**: Set when creating the Tofu instance
+2. **Init variables**: Passed to the `init()` method
+
+When both are provided, they are merged with init variables taking precedence over constructor variables.
+
+```typescript
+// Constructor variables (base configuration)
+const tofu = new Tofu({
+  workingDirectory: './infrastructure',
+  variables: {
+    environment: 'dev',
+    region: 'us-east-1',
+    instance_type: 't3.micro'
+  }
+});
+
+// Init with additional/override variables
+await tofu.init({
+  variables: {
+    environment: 'prod',        // Overrides constructor value
+    backend_bucket: 'my-state-bucket'  // Additional variable
+  }
+});
+
+// Final merged variables:
+// environment: 'prod' (from init - overrides constructor)
+// region: 'us-east-1' (from constructor)
+// instance_type: 't3.micro' (from constructor)  
+// backend_bucket: 'my-state-bucket' (from init)
+```
+
+#### Parameterized Backend Configuration
+
+Variables during initialization are especially powerful for dynamic backend configuration:
+
+```typescript
+const environment = process.env.ENVIRONMENT || 'dev';
+const region = process.env.AWS_REGION || 'us-west-2';
+const accountId = process.env.AWS_ACCOUNT_ID;
+
+const tofu = new Tofu({
+  workingDirectory: './infrastructure',
+  variables: {
+    project_name: 'my-project',
+    owner: 'devops-team'
+  }
+});
+
+// Initialize with environment-specific backend and variables
+await tofu.init({
+  backendConfig: {
+    bucket: `terraform-state-${accountId}-${region}`,
+    key: `${environment}/terraform.tfstate`,
+    region: region,
+    encrypt: true,
+    dynamodb_table: `terraform-locks-${environment}`
+  },
+  variables: {
+    environment: environment,
+    region: region,
+    account_id: accountId,
+    // These variables can be used in your .tf files
+    state_bucket: `terraform-state-${accountId}-${region}`,
+    lock_table: `terraform-locks-${environment}`
+  }
+});
+```
+
+#### Multi-Environment Deployment Example
+
+```typescript
+async function deployToEnvironment(env: 'dev' | 'staging' | 'prod') {
+  const config = {
+    dev: {
+      region: 'us-east-1',
+      instance_type: 't3.micro',
+      min_size: 1,
+      max_size: 2
+    },
+    staging: {
+      region: 'us-west-2', 
+      instance_type: 't3.small',
+      min_size: 2,
+      max_size: 4
+    },
+    prod: {
+      region: 'us-west-2',
+      instance_type: 't3.medium', 
+      min_size: 3,
+      max_size: 10
+    }
+  };
+
+  const tofu = new Tofu({
+    workingDirectory: './infrastructure',
+    autoApprove: env !== 'prod', // Require manual approval for prod
+    variables: {
+      project_name: 'my-app',
+      environment: env
+    }
+  });
+
+  await tofu.init({
+    backendConfig: {
+      bucket: `my-terraform-state-${env}`,
+      key: `${env}/terraform.tfstate`,
+      region: config[env].region
+    },
+    variables: {
+      ...config[env],
+      // Override environment to ensure consistency
+      environment: env
+    }
+  });
+
+  const plan = await tofu.plan();
+  console.log(`${env} deployment plan:`, plan.changes);
+  
+  if (env === 'prod') {
+    // Manual approval required for production
+    const readline = require('readline').createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+    
+    const approved = await new Promise<boolean>((resolve) => {
+      readline.question('Apply to production? (yes/no): ', (answer) => {
+        readline.close();
+        resolve(answer.toLowerCase() === 'yes');
+      });
+    });
+    
+    if (!approved) {
+      console.log('Production deployment cancelled');
+      return;
+    }
+  }
+  
+  await tofu.apply();
+  console.log(`${env} deployment completed`);
+}
+
+// Usage
+await deployToEnvironment('dev');
+await deployToEnvironment('staging');
+await deployToEnvironment('prod');
+```
+
 #### Planning with Options
 
 ```typescript
+// Basic plan
+const plan = await tofu.plan();
+
 // Save plan to file
-const plan = await tofu.plan({ out: 'tfplan' });
+const planWithFile = await tofu.plan({ out: 'tfplan' });
 
 // Use detailed exit code
 const detailedPlan = await tofu.plan({ detailed: true });
+
+// Plan with specific variables (merged with constructor variables)
+const planWithVars = await tofu.plan({
+  variables: {
+    environment: 'staging',
+    instance_count: 3,
+    enable_monitoring: true
+  }
+});
+
+// Combine all options
+const comprehensivePlan = await tofu.plan({
+  out: 'production.plan',
+  detailed: true,
+  variables: {
+    environment: 'prod',
+    region: 'us-west-2',
+    instance_type: 't3.large',
+    min_capacity: 5,
+    max_capacity: 20
+  }
+});
+
+console.log(`Plan: ${comprehensivePlan.changes.add} to add, ${comprehensivePlan.changes.change} to change, ${comprehensivePlan.changes.destroy} to destroy`);
+```
+
+#### Variable Scenarios for Planning
+
+```typescript
+// Scenario 1: Different variables for different plan purposes
+const tofu = new Tofu({
+  workingDirectory: './infrastructure',
+  variables: {
+    project_name: 'my-app',
+    owner: 'devops-team'
+  }
+});
+
+// Plan for development environment
+const devPlan = await tofu.plan({
+  variables: {
+    environment: 'dev',
+    instance_type: 't3.micro',
+    replica_count: 1
+  }
+});
+
+// Plan for production environment (same Tofu instance, different variables)
+const prodPlan = await tofu.plan({
+  variables: {
+    environment: 'prod',
+    instance_type: 't3.large',
+    replica_count: 5,
+    enable_backup: true
+  }
+});
+
+// Scenario 2: What-if analysis with different configurations
+const baseConfig = {
+  environment: 'prod',
+  region: 'us-west-2'
+};
+
+// Plan with current configuration
+const currentPlan = await tofu.plan({
+  variables: {
+    ...baseConfig,
+    instance_type: 't3.medium',
+    replica_count: 3
+  }
+});
+
+// Plan with scaled-up configuration
+const scaledPlan = await tofu.plan({
+  variables: {
+    ...baseConfig,
+    instance_type: 't3.large',
+    replica_count: 10
+  }
+});
+
+console.log('Current plan changes:', currentPlan.changes);
+console.log('Scaled plan changes:', scaledPlan.changes);
+
+// Scenario 3: Feature flag testing
+const featurePlan = await tofu.plan({
+  variables: {
+    environment: 'staging',
+    enable_new_feature: true,
+    feature_rollout_percentage: 50
+  }
+});
 ```
 
 #### Applying a Saved Plan
