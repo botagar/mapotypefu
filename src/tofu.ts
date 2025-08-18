@@ -135,16 +135,18 @@ export class Tofu {
       const { stdout } = await this.runCommand(args);
 
       // Parse the plan output to extract changes
-      const addMatch = stdout.match(/Plan: (\d+) to add/);
-      const changeMatch = stdout.match(/(\d+) to change/);
-      const destroyMatch = stdout.match(/(\d+) to destroy/);
+      // OpenTofu output format: "Plan: X to add, Y to change, Z to destroy."
+      // Strip ANSI escape codes first to handle colored output
+      // eslint-disable-next-line no-control-regex
+      const cleanOutput = stdout.replace(/\u001b\[[0-9;]*m/g, '');
+      const planMatch = cleanOutput.match(/Plan:\s*(\d+)\s+to\s+add,\s*(\d+)\s+to\s+change,\s*(\d+)\s+to\s+destroy\./);
 
       return {
         summary: 'Plan generated successfully',
         changes: {
-          add: addMatch ? parseInt(addMatch[1], 10) : 0,
-          change: changeMatch ? parseInt(changeMatch[1], 10) : 0,
-          destroy: destroyMatch ? parseInt(destroyMatch[1], 10) : 0,
+          add: planMatch ? parseInt(planMatch[1], 10) : 0,
+          change: planMatch ? parseInt(planMatch[2], 10) : 0,
+          destroy: planMatch ? parseInt(planMatch[3], 10) : 0,
         },
         raw: stdout,
       };
