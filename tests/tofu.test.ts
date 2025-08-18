@@ -350,6 +350,21 @@ describe('Tofu', () => {
     ], expect.any(Object));
   });
 
+  test('should parse plan output with ANSI color codes', async () => {
+    (execa as jest.Mock).mockResolvedValueOnce({
+      stdout: '\u001b[1mPlan:\u001b[0m 3 to add, 1 to change, 2 to destroy.\n\nSome other output...',
+      stderr: '',
+      all: '\u001b[1mPlan:\u001b[0m 3 to add, 1 to change, 2 to destroy.\n\nSome other output...'
+    });
+    
+    const plan = await tofu.plan();
+    expect(plan.changes).toEqual({
+      add: 3,
+      change: 1,
+      destroy: 2
+    });
+  });
+
   test('should apply changes', async () => {
     (execa as jest.Mock).mockResolvedValueOnce({
       stdout: 'Apply complete! Resources: 1 added, 0 changed, 0 destroyed.',
