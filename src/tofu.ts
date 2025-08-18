@@ -259,7 +259,7 @@ export class Tofu {
    * Helper method to add variable arguments
    */
   private addVariableArgs(
-    args: string[], 
+    args: string[],
     additionalVariables?: Record<string, string | number | boolean>
   ): void {
     // Merge constructor variables with additional variables

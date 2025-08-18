@@ -1,3 +1,11 @@
+# [2.1.0](https://github.com/botagar/mapotypefu/compare/v2.0.0...v2.1.0) (2025-08-18)
+
+
+### Features
+
+* add variables support to init method for parameterized backend configuration ([8f62a27](https://github.com/botagar/mapotypefu/commit/8f62a279476497ebaa2f54af90fe29da7dac5777))
+* add variables support to plan method for dynamic planning scenarios ([039febc](https://github.com/botagar/mapotypefu/commit/039febc5365916ffd7da6d670ee215b3d7698c7a))
+
 # [2.0.0](https://github.com/botagar/mapotypefu/compare/v1.1.1...v2.0.0) (2025-07-25)
 
 
