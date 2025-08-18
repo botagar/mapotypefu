@@ -1,3 +1,10 @@
+## [2.1.1](https://github.com/botagar/mapotypefu/compare/v2.1.0...v2.1.1) (2025-08-18)
+
+
+### Bug Fixes
+
+* correct plan output parsing regex to match actual OpenTofu format ([8d80e00](https://github.com/botagar/mapotypefu/commit/8d80e001ecf0b138267c8a8c31711a22415744e3))
+
 # [2.1.0](https://github.com/botagar/mapotypefu/compare/v2.0.0...v2.1.0) (2025-08-18)
 
 

@@ -139,7 +139,9 @@ export class Tofu {
       // Strip ANSI escape codes first to handle colored output
       // eslint-disable-next-line no-control-regex
       const cleanOutput = stdout.replace(/\u001b\[[0-9;]*m/g, '');
-      const planMatch = cleanOutput.match(/Plan:\s*(\d+)\s+to\s+add,\s*(\d+)\s+to\s+change,\s*(\d+)\s+to\s+destroy\./);
+      const planMatch = cleanOutput.match(
+        /Plan:\s*(\d+)\s+to\s+add,\s*(\d+)\s+to\s+change,\s*(\d+)\s+to\s+destroy\./
+      );
 
       return {
         summary: 'Plan generated successfully',
