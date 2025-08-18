@@ -140,13 +140,38 @@ Returns: A promise that resolves to the output of the init command.
 Generate an execution plan.
 
 ```typescript
-async plan(options?: { out?: string, detailed?: boolean }): Promise<PlanResult>
+async plan(options?: PlanOptions): Promise<PlanResult>
 ```
+
+#### PlanOptions
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| options.out | string | undefined | Path to save the plan file |
-| options.detailed | boolean | false | Return detailed exit code |
+| out | string | undefined | Path to save the plan file |
+| detailed | boolean | false | Return detailed exit code |
+| variables | Record<string, string \| number \| boolean> | undefined | Variables to pass to OpenTofu during planning (merged with constructor variables) |
+
+**Variable Merging Behavior:**
+
+Variables passed to the `plan` method are merged with variables from the constructor. Plan-specific variables take precedence over constructor variables when there are conflicts.
+
+```typescript
+const tofu = new Tofu({
+  variables: {
+    environment: 'dev',
+    region: 'us-east-1'
+  }
+});
+
+// Plan variables override constructor variables
+await tofu.plan({
+  variables: {
+    environment: 'prod', // Overrides constructor value
+    instance_count: 3 // Additional variable
+  }
+});
+// Results in: environment=prod, region=us-east-1, instance_count=3
+```
 
 Returns: A promise that resolves to a PlanResult object.
 

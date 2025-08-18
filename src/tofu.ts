@@ -23,6 +23,12 @@ export interface InitOptions {
   variables?: Record<string, string | number | boolean>;
 }
 
+export interface PlanOptions {
+  out?: string;
+  detailed?: boolean;
+  variables?: Record<string, string | number | boolean>;
+}
+
 export interface PlanResult {
   summary: string;
   changes: {
@@ -111,7 +117,7 @@ export class Tofu {
   /**
    * Generate an execution plan
    */
-  async plan(options?: { out?: string; detailed?: boolean }): Promise<PlanResult> {
+  async plan(options?: PlanOptions): Promise<PlanResult> {
     const args = ['plan'];
 
     if (options?.out) {
@@ -122,8 +128,8 @@ export class Tofu {
       args.push('-detailed-exitcode');
     }
 
-    // Add variables if specified
-    this.addVariableArgs(args);
+    // Add variables (merge constructor variables with plan-specific variables)
+    this.addVariableArgs(args, options?.variables);
 
     try {
       const { stdout } = await this.runCommand(args);

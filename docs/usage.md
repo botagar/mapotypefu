@@ -353,11 +353,106 @@ await deployToEnvironment('prod');
 #### Planning with Options
 
 ```typescript
+// Basic plan
+const plan = await tofu.plan();
+
 // Save plan to file
-const plan = await tofu.plan({ out: 'tfplan' });
+const planWithFile = await tofu.plan({ out: 'tfplan' });
 
 // Use detailed exit code
 const detailedPlan = await tofu.plan({ detailed: true });
+
+// Plan with specific variables (merged with constructor variables)
+const planWithVars = await tofu.plan({
+  variables: {
+    environment: 'staging',
+    instance_count: 3,
+    enable_monitoring: true
+  }
+});
+
+// Combine all options
+const comprehensivePlan = await tofu.plan({
+  out: 'production.plan',
+  detailed: true,
+  variables: {
+    environment: 'prod',
+    region: 'us-west-2',
+    instance_type: 't3.large',
+    min_capacity: 5,
+    max_capacity: 20
+  }
+});
+
+console.log(`Plan: ${comprehensivePlan.changes.add} to add, ${comprehensivePlan.changes.change} to change, ${comprehensivePlan.changes.destroy} to destroy`);
+```
+
+#### Variable Scenarios for Planning
+
+```typescript
+// Scenario 1: Different variables for different plan purposes
+const tofu = new Tofu({
+  workingDirectory: './infrastructure',
+  variables: {
+    project_name: 'my-app',
+    owner: 'devops-team'
+  }
+});
+
+// Plan for development environment
+const devPlan = await tofu.plan({
+  variables: {
+    environment: 'dev',
+    instance_type: 't3.micro',
+    replica_count: 1
+  }
+});
+
+// Plan for production environment (same Tofu instance, different variables)
+const prodPlan = await tofu.plan({
+  variables: {
+    environment: 'prod',
+    instance_type: 't3.large',
+    replica_count: 5,
+    enable_backup: true
+  }
+});
+
+// Scenario 2: What-if analysis with different configurations
+const baseConfig = {
+  environment: 'prod',
+  region: 'us-west-2'
+};
+
+// Plan with current configuration
+const currentPlan = await tofu.plan({
+  variables: {
+    ...baseConfig,
+    instance_type: 't3.medium',
+    replica_count: 3
+  }
+});
+
+// Plan with scaled-up configuration
+const scaledPlan = await tofu.plan({
+  variables: {
+    ...baseConfig,
+    instance_type: 't3.large',
+    replica_count: 10
+  }
+});
+
+console.log('Current plan changes:', currentPlan.changes);
+console.log('Scaled plan changes:', scaledPlan.changes);
+
+// Scenario 3: Feature flag testing
+const featurePlan = await tofu.plan({
+  variables: {
+    environment: 'staging',
+    enable_new_feature: true,
+    feature_rollout_percentage: 50
+  }
+});
 ```
 
 #### Applying a Saved Plan
