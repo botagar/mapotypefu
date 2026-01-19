@@ -36,7 +36,7 @@
     "node": ">=22.0.0"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.28.5",
+    "@babel/preset-env": "^7.28.6",
     "@babel/preset-typescript": "^7.28.5",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
@@ -48,7 +48,7 @@
     "eslint": "^8.35.0",
     "eslint-config-prettier": "^10.1.8",
     "jest": "^30.2.0",
-    "prettier": "^3.7.4",
+    "prettier": "^3.8.0",
     "semantic-release": "^24.2.9",
     "ts-jest": "^29.4.6",
     "typescript": "^5.9.3"
